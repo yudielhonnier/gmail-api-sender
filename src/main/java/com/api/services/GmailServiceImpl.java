@@ -19,6 +19,7 @@ import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Message;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
@@ -38,10 +39,30 @@ public final class GmailServiceImpl implements GmailService {
     private static final int LOCAL_RECEIVER_PORT = 8082;
 
     Credential credential;
+
     Gmail userGmail;
 
     private static final List<String> SCOPES = new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
+
+    @Override
+    public boolean initialize() throws Exception {
+        userGmail = createGmail();
+        System.out.println("credentials created");
+
+        userGmail.users().messages().list("laflechahonnyone@gmail.com");
+        return true;
+    }
+
+    private Gmail createGmail() throws Exception {
+        System.out.println("creating a email");
+        NetHttpTransport netHttpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        credential = authorize(netHttpTransport);
+        System.out.println("credentials created");
+        return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+    }
 
     private Credential authorize(final NetHttpTransport HTTP_TRANSPORT) throws Exception {
 
@@ -49,7 +70,7 @@ public final class GmailServiceImpl implements GmailService {
         FileInputStream fileInputStream = new FileInputStream("client_secret.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(fileInputStream));
-
+        System.out.println("client secret loaded");
 //         Generate the url that will be used for the consent dialog.
         GoogleAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow.Builder(
@@ -62,6 +83,7 @@ public final class GmailServiceImpl implements GmailService {
                         .setAccessType("offline")
                         .setApprovalPrompt("auto")
                         .build();
+        System.out.println("flow  loaded");
 
 //         Exchange an authorization code for  refresh token
         LocalServerReceiver receiver =
@@ -70,13 +92,6 @@ public final class GmailServiceImpl implements GmailService {
         Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 
         return credential;
-    }
-
-    @Override
-    public boolean initialize() throws Exception {
-        userGmail = createGmail();
-        userGmail.users().messages().list("laflechahonnyone@gmail.com");
-        return true;
     }
 
     @Override
@@ -118,13 +133,7 @@ public final class GmailServiceImpl implements GmailService {
         return true;
     }
 
-    private Gmail createGmail() throws Exception {
-        NetHttpTransport netHttpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        credential = authorize(netHttpTransport);
-        return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
+
 
     private MimeMessage createEmail(String to, String from, String subject, String bodyText) throws MessagingException {
         MimeMessage email = new MimeMessage(Session.getDefaultInstance(new Properties(), null));

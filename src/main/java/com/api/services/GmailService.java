@@ -19,4 +19,6 @@ public interface GmailService {
     boolean  initialize() throws Exception;
 
      void setCredential(GoogleAuthorizationCodeFlow flow, String code, String redirectUri);
+
+    String authorize()throws Exception;
 }

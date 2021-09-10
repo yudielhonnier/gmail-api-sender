@@ -71,7 +71,7 @@ public class GoogleMailController {
        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
-    @RequestMapping(value = "/login/gmailCallback", method = RequestMethod.GET, params = "code")
+    @RequestMapping(value = "/Callback", method = RequestMethod.GET, params = "code")
     public ResponseEntity<String> oauth2Callback(@RequestParam(value = "code") String code) {
         JSONObject json = new JSONObject();
         JSONArray arr = new JSONArray();
@@ -89,9 +89,9 @@ public class GoogleMailController {
     }
 
     @RequestMapping(value = "/email/initialize", method = RequestMethod.GET)
-    public ResponseEntity googleInitialize() throws Exception {
+    public RedirectView googleInitialize() throws Exception {
 
         gmailService.initialize();
-        return new ResponseEntity(HttpStatus.OK);
+        return new RedirectView(gmailService.authorize());
     }
 }

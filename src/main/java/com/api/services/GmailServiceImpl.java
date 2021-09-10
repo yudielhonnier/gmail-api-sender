@@ -9,6 +9,7 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -34,6 +35,7 @@ public final class GmailServiceImpl implements GmailService {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final File DATA_STORE_DIR =
             new File(GmailApplication.class.getResource("/").getPath(), "credentials");
+    private static HttpTransport httpTransport;
 
     // port of redirect_uri http://localhost:8082/Callback
 //    private static final int LOCAL_RECEIVER_PORT = 78547;
@@ -52,27 +54,26 @@ public final class GmailServiceImpl implements GmailService {
         return true;
     }
 
-    private Gmail createGmail() throws Exception {
-        NetHttpTransport netHttpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        credential = authorize(netHttpTransport);
-        System.out.println("credentials created");
+    private Gmail createGmail()  {
+
+
         return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
-
-    private Credential authorize(final NetHttpTransport HTTP_TRANSPORT) throws Exception {
+    @Override
+    public String authorize() throws Exception {
 
         // Load client_secret.json file
         FileInputStream fileInputStream = new FileInputStream("client_secret.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(fileInputStream));
         System.out.println("client secret loaded");
-
+        httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 //         Generate the url that will be used for the consent dialog.
         GoogleAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow.Builder(
-                        HTTP_TRANSPORT,
+                        httpTransport,
                         JSON_FACTORY,
                         clientSecrets,
                         SCOPES
@@ -89,8 +90,7 @@ public final class GmailServiceImpl implements GmailService {
         authorizationUrl = flow.newAuthorizationUrl().setRedirectUri("https://gmail-api-sender.herokuapp.com/Callback");
 
         System.out.println("Please copy and paste this authorizationUrl in your browser->" + authorizationUrl);
-
-        return credential;
+        return authorizationUrl.build();
     }
 
     @Override

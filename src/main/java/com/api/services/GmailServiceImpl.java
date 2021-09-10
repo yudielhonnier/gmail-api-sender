@@ -144,7 +144,7 @@ public final class GmailServiceImpl implements GmailService {
                     try {
                         message = createMessageWithEmail(
                                 createEmail(emailParametersToSend.getRecipientAddress()
-                                        , emailFrom
+                                        , emailParametersToSend.getRecipientAddress()
                                         , emailParametersToSend.getSubject()
                                         , emailParametersToSend.getBody()));
                     } catch (MessagingException e) {

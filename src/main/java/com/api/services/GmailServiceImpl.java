@@ -38,25 +38,26 @@ public final class GmailServiceImpl implements GmailService {
     private static final int LOCAL_RECEIVER_PORT = 8082;
 
     Credential credential;
+    Gmail userGmail;
 
-    private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND,GmailScopes.MAIL_GOOGLE_COM));
+    private static final List<String> SCOPES = new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
+    private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
 
     private Credential authorize(final NetHttpTransport HTTP_TRANSPORT) throws Exception {
 
         // Load client_secret.json file
-        FileInputStream fileInputStream=new FileInputStream("client_secret.json");
-
+        FileInputStream fileInputStream = new FileInputStream("client_secret.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(fileInputStream));
 
 //         Generate the url that will be used for the consent dialog.
         GoogleAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow.Builder(
-                        HTTP_TRANSPORT ,
+                        HTTP_TRANSPORT,
                         JSON_FACTORY,
                         clientSecrets,
                         SCOPES
-                        )
+                )
                         .setDataStoreFactory(new FileDataStoreFactory(DATA_STORE_DIR))
                         .setAccessType("offline")
                         .setApprovalPrompt("auto")
@@ -65,58 +66,61 @@ public final class GmailServiceImpl implements GmailService {
 //         Exchange an authorization code for  refresh token
         LocalServerReceiver receiver =
                 new LocalServerReceiver.Builder().setPort(LOCAL_RECEIVER_PORT).build();
-        System.out.println("receiver----"+ receiver.getRedirectUri());
+        System.out.println("receiver----" + receiver.getRedirectUri());
         Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 
         return credential;
     }
 
-
-    private List<Integer> emailsNoSended=new ArrayList<>(Arrays.asList());
+    @Override
+    public boolean initialize() throws Exception {
+        userGmail = createGmail();
+        userGmail.users().messages().list("laflechahonnyone@gmail.com");
+        return true;
+    }
 
     @Override
-    public boolean sendMessage(List<EmailParameters> emails)  {
+    public boolean sendMessage(List<EmailParameters> emails) {
 
-            emails.stream().forEach((emailParametersToSend) ->{
+        emails.stream().forEach((emailParametersToSend) -> {
 
-                        Message message = null;
-                        try {
-                            message = createMessageWithEmail(
-                                    createEmail(emailParametersToSend.getRecipientAddress()
-                                            , emailParametersToSend.getFrom()
-                                            , emailParametersToSend.getSubject()
-                                            , emailParametersToSend.getBody()));
-                        } catch (MessagingException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        System.out.println("getBody ---"+emailParametersToSend.getBody());
-
-                        try {
-                            Gmail userGmail=createGmail();
-                            userGmail.users().messages().list("laflechahonnyone@gmail.com");
-                            if (! userGmail.users()
-                                    .messages()
-                                    .send(emailParametersToSend.getFrom(), message)
-                                    .execute()
-                                    .getLabelIds().contains("SENT")){
-                                System.out.println("Problem sendind mesagge tu user  "+emailParametersToSend.getRecipientAddress());
-                               emailParametersToSend.setEnviado("false");
-
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    Message message = null;
+                    try {
+                        message = createMessageWithEmail(
+                                createEmail(emailParametersToSend.getRecipientAddress()
+                                        , emailParametersToSend.getFrom()
+                                        , emailParametersToSend.getSubject()
+                                        , emailParametersToSend.getBody()));
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    );
+                    System.out.println("getBody ---" + emailParametersToSend.getBody());
+
+                    try {
+
+                        if (!userGmail.users()
+                                .messages()
+                                .send(emailParametersToSend.getFrom(), message)
+                                .execute()
+                                .getLabelIds().contains("SENT")) {
+                            System.out.println("Problem sendind mesagge tu user  " + emailParametersToSend.getRecipientAddress());
+                            emailParametersToSend.setEnviado("false");
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
 
         return true;
     }
 
     private Gmail createGmail() throws Exception {
-       NetHttpTransport netHttpTransport= GoogleNetHttpTransport.newTrustedTransport();
-        credential=authorize(netHttpTransport);
+        NetHttpTransport netHttpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        credential = authorize(netHttpTransport);
         return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();

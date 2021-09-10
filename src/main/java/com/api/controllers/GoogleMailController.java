@@ -68,4 +68,11 @@ public class GoogleMailController {
        }
        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
+
+    @RequestMapping(value = "/email/initialize", method = RequestMethod.GET)
+    public ResponseEntity googleInitialize() throws Exception {
+
+        gmailService.initialize();
+        return new ResponseEntity(HttpStatus.OK);
+    }
 }

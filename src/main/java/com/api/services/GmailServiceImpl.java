@@ -68,6 +68,7 @@ public final class GmailServiceImpl implements GmailService {
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(fileInputStream));
         System.out.println("client secret loaded");
+
 //         Generate the url that will be used for the consent dialog.
         GoogleAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow.Builder(
@@ -84,8 +85,6 @@ public final class GmailServiceImpl implements GmailService {
 
 //         Exchange an authorization code for  refresh token
 
-//        System.out.println("receiver----" + receiver.getRedirectUri());
-//        Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
         AuthorizationCodeRequestUrl authorizationUrl;
         authorizationUrl = flow.newAuthorizationUrl().setRedirectUri("https://gmail-api-sender.herokuapp.com/Callback");
 

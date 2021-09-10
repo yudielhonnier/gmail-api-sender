@@ -17,4 +17,6 @@ public interface GmailService {
     boolean sendMessage(List< EmailParameters> emails) throws MessagingException, IOException;
 
     boolean  initialize() throws Exception;
+
+     void setCredential(GoogleAuthorizationCodeFlow flow, String code, String redirectUri);
 }

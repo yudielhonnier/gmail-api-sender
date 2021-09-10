@@ -58,6 +58,8 @@ public class GoogleMailController {
     @Resource
     private GmailService gmailService;
 
+    GoogleClientSecrets clientSecrets;
+    GoogleAuthorizationCodeFlow flow;
 
     @RequestMapping(value = "/email/send", method = RequestMethod.GET, consumes = "application/json")
     public ResponseEntity googleConnectionStatus(@RequestBody EmailParameters emailParametersData) throws Exception {
@@ -67,6 +69,23 @@ public class GoogleMailController {
            return new ResponseEntity(HttpStatus.CREATED);
        }
        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @RequestMapping(value = "/login/gmailCallback", method = RequestMethod.GET, params = "code")
+    public ResponseEntity<String> oauth2Callback(@RequestParam(value = "code") String code) {
+        JSONObject json = new JSONObject();
+        JSONArray arr = new JSONArray();
+
+        System.out.println("Look jose the method entered");
+        // String message;
+        try {
+            gmailService.setCredential(flow, code, "https://gmail-api-sender.herokuapp.com/Callback");
+                  json.put("response", arr);
+        } catch (Exception e) {
+            System.out.println("exception cached ");
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/email/initialize", method = RequestMethod.GET)

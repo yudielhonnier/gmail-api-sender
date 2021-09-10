@@ -2,10 +2,10 @@ package com.api.services;
 
 
 import com.api.GmailApplication;
+import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
 
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -48,14 +48,11 @@ public final class GmailServiceImpl implements GmailService {
     @Override
     public boolean initialize() throws Exception {
         userGmail = createGmail();
-        System.out.println("credentials created");
-
         userGmail.users().messages().list("laflechahonnyone@gmail.com");
         return true;
     }
 
     private Gmail createGmail() throws Exception {
-        System.out.println("creating a email");
         NetHttpTransport netHttpTransport = GoogleNetHttpTransport.newTrustedTransport();
         credential = authorize(netHttpTransport);
         System.out.println("credentials created");
@@ -86,12 +83,29 @@ public final class GmailServiceImpl implements GmailService {
         System.out.println("flow  loaded");
 
 //         Exchange an authorization code for  refresh token
-        LocalServerReceiver receiver =
-                new LocalServerReceiver.Builder().build();
-        System.out.println("receiver----" + receiver.getRedirectUri());
-        Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+//        System.out.println("receiver----" + receiver.getRedirectUri());
+//        Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+        AuthorizationCodeRequestUrl authorizationUrl;
+        authorizationUrl = flow.newAuthorizationUrl().setRedirectUri("https://gmail-api-sender.herokuapp.com/Callback");
+
+        System.out.println("Please copy and paste this authorizationUrl in your browser->" + authorizationUrl);
 
         return credential;
+    }
+
+    @Override
+    public void setCredential(GoogleAuthorizationCodeFlow flow, String code, String redirectUri) {
+        try {
+            TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
+            credential = flow.createAndStoreCredential(response, "userId");
+
+        } catch (Exception e) {
+
+            System.out.println("exception cached ");
+            e.printStackTrace();
+        }
+
     }
 
     @Override

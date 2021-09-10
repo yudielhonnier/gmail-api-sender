@@ -36,7 +36,7 @@ public final class GmailServiceImpl implements GmailService {
             new File(GmailApplication.class.getResource("/").getPath(), "credentials");
 
     // port of redirect_uri http://localhost:8082/Callback
-    private static final int LOCAL_RECEIVER_PORT = 8082;
+//    private static final int LOCAL_RECEIVER_PORT = 78547;
 
     Credential credential;
 
@@ -87,7 +87,7 @@ public final class GmailServiceImpl implements GmailService {
 
 //         Exchange an authorization code for  refresh token
         LocalServerReceiver receiver =
-                new LocalServerReceiver.Builder().setPort(LOCAL_RECEIVER_PORT).build();
+                new LocalServerReceiver.Builder().build();
         System.out.println("receiver----" + receiver.getRedirectUri());
         Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 

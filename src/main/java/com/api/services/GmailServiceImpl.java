@@ -44,25 +44,13 @@ public final class GmailServiceImpl implements GmailService {
 
     Gmail userGmail;
 
+    GoogleAuthorizationCodeFlow flow;
+
     private static final List<String> SCOPES = new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
 
     @Override
-    public boolean initialize() throws Exception {
-        userGmail = createGmail();
-        userGmail.users().messages().list("laflechahonnyone@gmail.com");
-        return true;
-    }
-
-    private Gmail createGmail()  {
-
-
-        return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
-    @Override
-    public String authorize() throws Exception {
+    public String initialize() throws Exception {
 
         // Load client_secret.json file
         FileInputStream fileInputStream = new FileInputStream("client_secret.json");
@@ -70,8 +58,9 @@ public final class GmailServiceImpl implements GmailService {
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(fileInputStream));
         System.out.println("client secret loaded");
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+
 //         Generate the url that will be used for the consent dialog.
-        GoogleAuthorizationCodeFlow flow =
+             flow =
                 new GoogleAuthorizationCodeFlow.Builder(
                         httpTransport,
                         JSON_FACTORY,
@@ -93,11 +82,21 @@ public final class GmailServiceImpl implements GmailService {
         return authorizationUrl.build();
     }
 
+
+
     @Override
-    public void setCredential(GoogleAuthorizationCodeFlow flow, String code, String redirectUri) {
+    public String authorize() throws Exception {
+      return "authorized";
+
+    }
+
+    @Override
+    public void setCredential(String code, String redirectUri) {
         try {
             TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
             credential = flow.createAndStoreCredential(response, "userId");
+            userGmail = createGmail();
+            userGmail.users().messages().list("laflechahonnyone@gmail.com");
 
         } catch (Exception e) {
 
@@ -107,8 +106,16 @@ public final class GmailServiceImpl implements GmailService {
 
     }
 
+
+    private Gmail createGmail() throws IOException {
+        return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+    }
+
+
     @Override
-    public boolean sendMessage(List<EmailParameters> emails) {
+    public boolean sendMessage(List<EmailParameters> emails) throws IOException {
 
         emails.stream().forEach((emailParametersToSend) -> {
 

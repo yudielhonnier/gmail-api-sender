@@ -59,7 +59,7 @@ public class GoogleMailController {
     private GmailService gmailService;
 
     GoogleClientSecrets clientSecrets;
-    GoogleAuthorizationCodeFlow flow;
+
 
     @RequestMapping(value = "/email/send", method = RequestMethod.GET, consumes = "application/json")
     public ResponseEntity googleConnectionStatus(@RequestBody EmailParameters emailParametersData) throws Exception {
@@ -79,7 +79,7 @@ public class GoogleMailController {
         System.out.println("Look jose the method entered");
         // String message;
         try {
-            gmailService.setCredential(flow, code, "https://gmail-api-sender.herokuapp.com/Callback");
+            gmailService.setCredential( code, "https://gmail-api-sender.herokuapp.com/Callback");
                   json.put("response", arr);
         } catch (Exception e) {
             System.out.println("exception cached ");
@@ -91,7 +91,6 @@ public class GoogleMailController {
     @RequestMapping(value = "/email/initialize", method = RequestMethod.GET)
     public RedirectView googleInitialize() throws Exception {
 
-        gmailService.initialize();
-        return new RedirectView(gmailService.authorize());
+        return new RedirectView(gmailService.initialize());
     }
 }

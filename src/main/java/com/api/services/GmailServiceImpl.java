@@ -65,7 +65,7 @@ public final class GmailServiceImpl implements GmailService {
 //         Exchange an authorization code for  refresh token
         LocalServerReceiver receiver =
                 new LocalServerReceiver.Builder().setPort(LOCAL_RECEIVER_PORT).build();
-
+        System.out.println("receiver----"+ receiver.getRedirectUri());
         Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 
         return credential;

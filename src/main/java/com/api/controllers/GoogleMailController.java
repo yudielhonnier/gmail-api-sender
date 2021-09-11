@@ -1,5 +1,6 @@
 package com.api.controllers;
 
+import java.io.IOException;
 import java.util.*;
 
 import javax.annotation.Resource;
@@ -28,7 +29,7 @@ public class GoogleMailController {
     private GmailService gmailService;
 
     @RequestMapping(value = "/email/send", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity sendEmail(@RequestBody EmailParameters emailParametersData)   {
+    public ResponseEntity sendEmail(@RequestBody EmailParameters emailParametersData) throws IOException {
 
        if( gmailService.addEmail(emailParametersData)) {
            return new ResponseEntity(HttpStatus.CREATED);

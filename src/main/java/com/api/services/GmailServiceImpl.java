@@ -81,6 +81,7 @@ public final class GmailServiceImpl implements GmailService {
     GoogleClientSecrets clientSecrets;
 
     private List<Message> messageList=Arrays.asList(message);
+    // TODO CREATE EMAIL BD
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
     private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
 

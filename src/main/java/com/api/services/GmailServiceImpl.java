@@ -73,7 +73,7 @@ public final class GmailServiceImpl implements GmailService {
     private Long tokenExpiresIn;
 
 
-    private Message message;
+
 
     Credential credential;
     Gmail userGmail;
@@ -179,7 +179,7 @@ public final class GmailServiceImpl implements GmailService {
                         try {
                             if (!userGmail.users()
                                     .messages()
-                                    .send(emailFrom, this.message)
+                                    .send(emailFrom,message)
                                     .execute()
                                     .getLabelIds().contains("SENT")) {
 

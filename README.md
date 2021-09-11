@@ -23,8 +23,8 @@ https://developers.google.com/gmail/api/guides/sending
 ####Sending Email Guide  
 https://developers.google.com/gmail/api/quickstart/java
 
-####OAuth 2.0 Flow: Installed apps 
-https://developers.google.com/youtube/v3/guides/auth/installed-apps
+####Usar OAuth 2.0 para acceder a las API de Google
+https://developers.google.com/identity/protocols/oauth2
 
 
 

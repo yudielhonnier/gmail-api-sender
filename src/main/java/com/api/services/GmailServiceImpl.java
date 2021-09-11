@@ -76,6 +76,10 @@ public final class GmailServiceImpl implements GmailService {
     @Value("${gmail.client.tokenExpiresIn}")
     private Long tokenExpiresIn;
 
+//    @Value("${sheduler.configuration.cron}")
+//    private Long shedulerCron;
+
+
     Credential credential;
     Gmail userGmail;
     GoogleAuthorizationCodeFlow flow;
@@ -84,7 +88,7 @@ public final class GmailServiceImpl implements GmailService {
     private List<Message> messageList= new ArrayList<>(Arrays.asList());;
     // TODO CREATE EMAIL BD
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
-    private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM,"offline_access"));
+    private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
 
     @Override
     public String authorize() throws Exception {
@@ -163,7 +167,7 @@ public final class GmailServiceImpl implements GmailService {
                 .build();
     }
 
-    @Scheduled(cron = "0/15 * * * * ?")
+    @Scheduled(cron ="0 0/15 * * * ?" )
     public void sendMessage()  {
         if(serverOn&&!messageList.isEmpty()&&!sendingMessages) {
             sendingMessages=true;

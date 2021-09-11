@@ -183,8 +183,6 @@ public final class GmailServiceImpl implements GmailService {
                                         .execute()
                                         .getLabelIds().contains("SENT");
 
-                                message.getLabelIds().stream().forEach(s -> System.out.println("labels "+s));
-
                         } catch (Exception e) {
                             messagesNoSendeds.add(message);
                             e.printStackTrace();

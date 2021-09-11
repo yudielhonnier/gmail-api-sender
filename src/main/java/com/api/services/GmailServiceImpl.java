@@ -175,7 +175,7 @@ public final class GmailServiceImpl implements GmailService {
             System.out.println("MessageList size "+ messageList.size());
 
             messageList.stream().forEach((message) -> {
-
+            boolean testMessageLabels=false;
                         try {
                             System.out.println("message pretty ---" + message.toPrettyString());
 
@@ -184,13 +184,15 @@ public final class GmailServiceImpl implements GmailService {
                         }
 
                         try {
-                            if (!message.getLabelIds().contains("SENT")) {
-                                userGmail.users()
+
+                                testMessageLabels=userGmail.users()
                                         .messages()
                                         .send(emailFrom,message)
                                         .execute()
                                         .getLabelIds().contains("SENT");
-                            }
+                                System.out.println("the value of the level is"+testMessageLabels);
+                                message.getLabelIds().stream().forEach(s -> System.out.println("labels "+s));
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

@@ -80,7 +80,7 @@ public final class GmailServiceImpl implements GmailService {
     GoogleAuthorizationCodeFlow flow;
     GoogleClientSecrets clientSecrets;
 
-    private List<Message> messageList=Arrays.asList(message);
+    private List<Message> messageList=Arrays.asList();
     // TODO CREATE EMAIL BD
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
     private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
@@ -115,13 +115,6 @@ public final class GmailServiceImpl implements GmailService {
         System.out.println("The server was already on ");
        return "/";
     }
-
-
-//    public void SendAuthorized() throws Exception {
-//    if (authorized){
-//    sendeds=sendMessage();
-//    }
-//    }
 
     @Override
     public boolean addEmail(EmailParameters emailParametersToSend){

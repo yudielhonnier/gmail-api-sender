@@ -85,9 +85,10 @@ public final class GmailServiceImpl implements GmailService {
     GoogleAuthorizationCodeFlow flow;
     GoogleClientSecrets clientSecrets;
 
-    private List<Message> messageList= new ArrayList<>(Arrays.asList());;
+    private List<Message> messageList= new ArrayList<>(Arrays.asList());
+    private List<Message> messagesNoSendeds= new ArrayList<>(Arrays.asList());
     // TODO CREATE EMAIL BD
-    private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
+
     private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
 
     @Override
@@ -173,31 +174,26 @@ public final class GmailServiceImpl implements GmailService {
             sendingMessages=true;
             System.out.println("Server authorized status "+ serverOn);
             System.out.println("MessageList size "+ messageList.size());
-
             messageList.stream().forEach((message) -> {
-            boolean testMessageLabels=false;
-                        try {
-                            System.out.println("message pretty ---" + message.toPrettyString());
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        try {
-
-                                testMessageLabels=userGmail.users()
+                try {
+                                userGmail.users()
                                         .messages()
                                         .send(emailFrom,message)
                                         .execute()
                                         .getLabelIds().contains("SENT");
-                                System.out.println("the value of the level is"+testMessageLabels);
+
                                 message.getLabelIds().stream().forEach(s -> System.out.println("labels "+s));
 
                         } catch (Exception e) {
+                            messagesNoSendeds.add(message);
                             e.printStackTrace();
                         }
                     }
+
             );
+            messageList.clear();
+
         }
     }
 
@@ -282,5 +278,66 @@ public final class GmailServiceImpl implements GmailService {
 
         return email;
     }
+
+//    public List<Message> listMessagesMatchingQuery(String userId, String query) throws IOException {
+//        ListMessagesResponse response = createGmail().users().messages().list(userId).setQ(query).execute();
+//        List<Message> messages = new ArrayList<Message>();
+//
+//        while (response.getMessages() != null) {
+//            messages.addAll(response.getMessages());
+//            if (response.getNextPageToken() != null) {
+//                String pageToken = response.getNextPageToken();
+//                response = createGmail().users().messages().list(userId).setQ(query).setPageToken(pageToken).execute();
+//            }
+//            else {
+//                break;
+//            }
+//        }
+//
+//        // for (Message message : messages) {
+//        //     System.out.println(message.toPrettyString());
+//        // }
+//
+//        return messages;
+//    }
+//
+//    public String getMessageContent(String id){
+//        String result = "";
+//        try {
+//            //Message msg = createGmail().users().messages().get("me", id).setFormat("full").execute();
+//            Message msg = createGmail().users().messages().get("manhattan.project.1939@gmail.com", id).setFormat("full").execute();
+//            result = StringUtils.newStringUtf8(Base64.decodeBase64(msg.getPayload().getParts().get(0).getBody().getData()));
+//        }
+//        catch (IOException ioe){
+//            result = "";
+//        }
+//        return result;
+//    }
+//
+//    public void getMessage2(String id) throws IOException{
+//        Message msg = createGmail().users().messages().get("manhattan.project.1939@gmail.com", id).setFormat("full").execute();
+//
+//        for (MessagePartHeader header : msg.getPayload().getHeaders()) {
+//            if (header.getName().contains("Date") || header.getName().contains("From") || header.getName().contains("To") || header.getName().contains("Subject"))
+//                System.out.println(header.getName() + ":" + header.getValue());
+//        }
+//
+//        // Displaying Message Body as a Plain Text
+//        for (MessagePart msgPart : msg.getPayload().getParts()) {
+//            if (msgPart.getMimeType().contains("text/plain"))
+//                System.out.println(new String(Base64.decodeBase64(msgPart.getBody().getData())));
+//        }
+//
+//        byte[] bodyBytes = Base64.decodeBase64(msg.getPayload().getParts().get(0).getBody().getData().trim().toString()); // get body
+//        String body = new String(bodyBytes, "UTF-8");
+//        System.out.println("---> body: "+body);
+//    }
+//
+//
+//    public Message getMessage(String userId, String messageId) throws IOException {
+//        Message message = createGmail().users().messages().get(userId, messageId).execute();
+//        System.out.println("Message snippet: " + message.getSnippet());
+//        return message;
+//    }
 
 }

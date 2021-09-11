@@ -10,7 +10,7 @@ Demo Project for Gmail API  Using Spring Boot Rest API with OAuth2.
 This api is not a mail server, it only allows you to send by mail from time to time a list of messages written for example in the contact section of your website.
 
 
-ng Security OAuth2 + Google Provider.
+
 
 <h2>Interesting reads about this topic</h2>
 
@@ -26,8 +26,8 @@ https://developers.google.com/gmail/api/quickstart/java
 ####Usar OAuth 2.0 para acceder a las API de Google
 https://developers.google.com/identity/protocols/oauth2
 
-
-
+####Gmail API Rest Resources
+https://developers.google.com/gmail/api/reference/rest
 
 <h2>Get it up and runnning</h2>
 

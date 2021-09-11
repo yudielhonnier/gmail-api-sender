@@ -28,7 +28,7 @@ public class GoogleMailController {
     private GmailService gmailService;
 
     @RequestMapping(value = "/email/send", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity sendEmail(@RequestBody EmailParameters emailParametersData) throws Exception {
+    public ResponseEntity sendEmail(@RequestBody EmailParameters emailParametersData)   {
 
        if( gmailService.addEmail(emailParametersData)) {
            return new ResponseEntity(HttpStatus.CREATED);

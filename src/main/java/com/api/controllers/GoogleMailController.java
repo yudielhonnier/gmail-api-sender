@@ -4,7 +4,7 @@ import java.util.*;
 
 import javax.annotation.Resource;
 
-import com.api.services.EmailParameters;
+import com.api.domain.EmailParameters;
 import com.api.services.GmailService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,8 +30,7 @@ public class GoogleMailController {
     @RequestMapping(value = "/email/send", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity sendEmail(@RequestBody EmailParameters emailParametersData) throws Exception {
 
-        emails.add( emailParametersData);
-       if( gmailService.sendMessage(emails)) {
+       if( gmailService.addEmail(emailParametersData)) {
            return new ResponseEntity(HttpStatus.CREATED);
        }
        return new ResponseEntity(HttpStatus.BAD_REQUEST);

@@ -1,6 +1,7 @@
 package com.api.services;
 
 
+import com.api.domain.EmailParameters;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
 
@@ -18,8 +19,10 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Message;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
@@ -33,6 +36,8 @@ public final class GmailServiceImpl implements GmailService {
     private static final String APPLICATION_NAME = "GMAIL API SENDER";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
+    private static boolean serverOn=false;
+    private static boolean sendeds=false;
 
     @Value("${gmail.client.clientId}")
     private String clientId;
@@ -64,17 +69,25 @@ public final class GmailServiceImpl implements GmailService {
     @Value("${gmail.client.emailFrom}")
     private String emailFrom;
 
+    @Value("${gmail.client.tokenExpiresIn}")
+    private Long tokenExpiresIn;
+
+    @Resource
+    private Message message;
+
     Credential credential;
     Gmail userGmail;
     GoogleAuthorizationCodeFlow flow;
     GoogleClientSecrets clientSecrets;
 
+    private List<Message> messageList=Arrays.asList(message);
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
     private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
 
     @Override
     public String authorize() throws Exception {
 
+     if(!serverOn){
         if (flow == null) {
             Details web = new Details();
             web.setClientId(clientId);
@@ -88,7 +101,6 @@ public final class GmailServiceImpl implements GmailService {
                     .setAccessType(accessType)
                     .setApprovalPrompt(approvalPromt)
                     .build();
-
         }
 
         System.out.println("flow  loaded");
@@ -97,26 +109,49 @@ public final class GmailServiceImpl implements GmailService {
         authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectUri);
 
         System.out.println("authorizationUrl --->\n" + authorizationUrl);
-        return authorizationUrl.build();
+         return authorizationUrl.build();
+        }
+        System.out.println("The server was already on ");
+       return "/";
     }
 
 
+//    public void SendAuthorized() throws Exception {
+//    if (authorized){
+//    sendeds=sendMessage();
+//    }
+//    }
 
     @Override
-    public String initialize() throws Exception {
-      return "authorized";
-
+    public boolean addEmail(EmailParameters emailParametersToSend){
+        Message message = null;
+       if(serverOn) {
+           try {
+               message = createMessageWithEmail(
+                       createEmail(emailParametersToSend.getRecipientAddress()
+                               , emailParametersToSend.getFrom()
+                               , emailParametersToSend.getSubject()
+                               , emailParametersToSend.getBody()));
+              return messageList.add(message);
+           } catch (MessagingException e) {
+               e.printStackTrace();
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       }
+        return false;
     }
 
     @Override
     public void exchangeCode(String code) {
         try {
-            TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectUri).execute();
+
+            TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectUri).execute().setExpiresInSeconds(tokenExpiresIn);
             credential = flow.createAndStoreCredential(response, "userId");
-            System.out.println(credential.getTransport().toString());
+            System.out.println("The token expire in -------"+ response.getExpiresInSeconds());
             userGmail = createGmail();
             userGmail.users().messages().list(emailFrom);
-
+            serverOn=true;
         } catch (Exception e) {
 
             System.out.println("exception cached ");
@@ -131,42 +166,31 @@ public final class GmailServiceImpl implements GmailService {
                 .build();
     }
 
-    @Override
-    public boolean sendMessage(List<EmailParameters> emails) throws IOException {
-        emails.stream().forEach((emailParametersToSend) -> {
+    @Scheduled(cron = "0/15 * * * * ?")
+    public void sendMessage() {
+        if(serverOn&&!messageList.isEmpty()) {
+            messageList.stream().forEach((message) -> {
 
-                    Message message = null;
-                    try {
-                        message = createMessageWithEmail(
-                                createEmail(emailParametersToSend.getRecipientAddress()
-                                        , emailParametersToSend.getFrom()
-                                        , emailParametersToSend.getSubject()
-                                        , emailParametersToSend.getBody()));
-                    } catch (MessagingException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("getBody ---" + emailParametersToSend.getBody());
-
-                    try {
-                        System.out.println("userGmail ---" + userGmail.toString());
-                        if (!userGmail.users()
-                                .messages()
-                                .send(emailParametersToSend.getFrom(), message)
-                                .execute()
-                                .getLabelIds().contains("SENT")) {
-                            System.out.println("Problem sendind mesagge tu user  " + emailParametersToSend.getRecipientAddress());
-                            emailParametersToSend.setEnviado("false");
-
+                        try {
+                            System.out.println("getBody ---" + message.toPrettyString());
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-        );
 
-        return true;
+                        try {
+                            if (!userGmail.users()
+                                    .messages()
+                                    .send(message.getId(), this.message)
+                                    .execute()
+                                    .getLabelIds().contains("SENT")) {
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+            );
+        }
     }
 
 
@@ -183,7 +207,7 @@ public final class GmailServiceImpl implements GmailService {
     private Message createMessageWithEmail(MimeMessage emailContent) throws MessagingException, IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         emailContent.writeTo(buffer);
-
+//TODO SE THE WAY TO UPDATE THE BASE64 CLASS
         return new Message()
                 .setRaw(Base64.encodeBase64URLSafeString(buffer.toByteArray()));
     }

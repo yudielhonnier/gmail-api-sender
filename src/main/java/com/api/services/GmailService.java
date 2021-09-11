@@ -1,11 +1,10 @@
 package com.api.services;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.api.domain.EmailParameters;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -14,11 +13,11 @@ public interface GmailService {
 
 //    void setCredential(GoogleAuthorizationCodeFlow flow,String code,String redirectUri);
 
-    boolean sendMessage(List< EmailParameters> emails) throws MessagingException, IOException;
+//    boolean sendMessage(List<EmailParameters> emails) throws MessagingException, IOException;
 
-    String  initialize() throws Exception;
+    void exchangeCode(String code);
 
-     void exchangeCode( String code);
+    String authorize() throws Exception;
 
-    String authorize()throws Exception;
+    boolean addEmail(EmailParameters emailParameterstoSend);
 }

@@ -1,4 +1,4 @@
-package com.api.services;
+package com.api.domain;
 
 import lombok.Data;
 

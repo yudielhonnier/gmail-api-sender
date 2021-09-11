@@ -72,7 +72,7 @@ public final class GmailServiceImpl implements GmailService {
     @Value("${gmail.client.tokenExpiresIn}")
     private Long tokenExpiresIn;
 
-    @Resource
+
     private Message message;
 
     Credential credential;

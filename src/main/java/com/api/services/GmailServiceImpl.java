@@ -170,6 +170,8 @@ public final class GmailServiceImpl implements GmailService {
     @Scheduled(cron = "0/15 * * * * ?")
     public void sendMessage() {
         if(serverOn&&!messageList.isEmpty()) {
+            System.out.println("Server authorized status "+ serverOn);
+            System.out.println("MessageList size "+ messageList.size());
             messageList.stream().forEach((message) -> {
 
                         try {

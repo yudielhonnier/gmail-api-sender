@@ -1,6 +1,5 @@
 package com.api.services;
 
-
 import com.api.domain.EmailParameters;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
@@ -22,11 +21,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.sql.DataSource;
 import java.io.*;
 import java.util.*;
 
@@ -37,7 +41,7 @@ public final class GmailServiceImpl implements GmailService {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
     private static boolean serverOn=false;
-    private static boolean sendeds=false;
+    private static boolean sendingMessages=false;
 
     @Value("${gmail.client.clientId}")
     private String clientId;
@@ -72,9 +76,6 @@ public final class GmailServiceImpl implements GmailService {
     @Value("${gmail.client.tokenExpiresIn}")
     private Long tokenExpiresIn;
 
-
-
-
     Credential credential;
     Gmail userGmail;
     GoogleAuthorizationCodeFlow flow;
@@ -83,7 +84,7 @@ public final class GmailServiceImpl implements GmailService {
     private List<Message> messageList= new ArrayList<>(Arrays.asList());;
     // TODO CREATE EMAIL BD
     private List<Integer> emailsNoSended = new ArrayList<>(Arrays.asList());
-    private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM));
+    private static final List<String> SCOPES=new ArrayList<>(Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.MAIL_GOOGLE_COM,"offline_access"));
 
     @Override
     public String authorize() throws Exception {
@@ -163,26 +164,28 @@ public final class GmailServiceImpl implements GmailService {
     }
 
     @Scheduled(cron = "0/15 * * * * ?")
-    public void sendMessage() throws IOException {
-        if(serverOn&&!messageList.isEmpty()) {
+    public void sendMessage()  {
+        if(serverOn&&!messageList.isEmpty()&&!sendingMessages) {
+            sendingMessages=true;
             System.out.println("Server authorized status "+ serverOn);
             System.out.println("MessageList size "+ messageList.size());
 
             messageList.stream().forEach((message) -> {
 
                         try {
-                            System.out.println("getBody ---" + message.toPrettyString());
+                            System.out.println("message pretty ---" + message.toPrettyString());
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
 
                         try {
-                            if (!userGmail.users()
-                                    .messages()
-                                    .send(emailFrom,message)
-                                    .execute()
-                                    .getLabelIds().contains("SENT")) {
-
+                            if (!message.getLabelIds().contains("SENT")) {
+                                userGmail.users()
+                                        .messages()
+                                        .send(emailFrom,message)
+                                        .execute()
+                                        .getLabelIds().contains("SENT");
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -193,7 +196,16 @@ public final class GmailServiceImpl implements GmailService {
     }
 
 
-
+    /**
+     * Create a MimeMessage using the parameters provided.
+     *
+     * @param to email address of the receiver
+     * @param from email address of the sender, the mailbox account
+     * @param subject subject of the email
+     * @param bodyText body text of the email
+     * @return the MimeMessage to be used to send email
+     * @throws MessagingException
+     */
     private MimeMessage createEmail(String to, String from, String subject, String bodyText) throws MessagingException {
         MimeMessage email = new MimeMessage(Session.getDefaultInstance(new Properties(), null));
         email.setFrom(new InternetAddress(from));
@@ -203,6 +215,14 @@ public final class GmailServiceImpl implements GmailService {
         return email;
     }
 
+    /**
+     * Create a message from an email.
+     *
+     * @param emailContent Email to be set to raw of message
+     * @return a message containing a base64url encoded email
+     * @throws IOException
+     * @throws MessagingException
+     */
     private Message createMessageWithEmail(MimeMessage emailContent) throws MessagingException, IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         emailContent.writeTo(buffer);
@@ -211,5 +231,50 @@ public final class GmailServiceImpl implements GmailService {
                 .setRaw(Base64.encodeBase64URLSafeString(buffer.toByteArray()));
     }
 
+    /**
+     * Create a MimeMessage using the parameters provided.
+     *
+     * @param to Email address of the receiver.
+     * @param from Email address of the sender, the mailbox account.
+     * @param subject Subject of the email.
+     * @param bodyText Body text of the email.
+     * @param file Path to the file to be attached.
+     * @return MimeMessage to be used to send email.
+     * @throws MessagingException
+     */
+
+    public static MimeMessage createEmailWithAttachment(String to,
+                                                        String from,
+                                                        String subject,
+                                                        String bodyText,
+                                                        File file)
+            throws MessagingException, IOException {
+        Properties props = new Properties();
+        Session session = Session.getDefaultInstance(props, null);
+
+        MimeMessage email = new MimeMessage(session);
+
+        email.setFrom(new InternetAddress(from));
+        email.addRecipient(javax.mail.Message.RecipientType.TO,
+                new InternetAddress(to));
+        email.setSubject(subject);
+
+        MimeBodyPart mimeBodyPart = new MimeBodyPart();
+        mimeBodyPart.setContent(bodyText, "text/plain");
+
+        Multipart multipart = new MimeMultipart();
+        multipart.addBodyPart(mimeBodyPart);
+
+        mimeBodyPart = new MimeBodyPart();
+        DataSource source = (DataSource) new FileDataSource(file);
+
+        mimeBodyPart.setDataHandler(new DataHandler((javax.activation.DataSource) source));
+        mimeBodyPart.setFileName(file.getName());
+
+        multipart.addBodyPart(mimeBodyPart);
+        email.setContent(multipart);
+
+        return email;
+    }
 
 }

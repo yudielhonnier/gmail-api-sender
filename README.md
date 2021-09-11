@@ -14,14 +14,20 @@ ng Security OAuth2 + Google Provider.
 
 <h2>Interesting reads about this topic</h2>
 
-###Creating and managing projects in Google Cloud
+####Creating and managing projects in Google Cloud
 https://cloud.google.com/resource-manager/docs/creating-managing-projects?visit_id=637669197043753578-2757882342&rd=1
 
-###A Guide To Spring Redirects
-https://www.baeldung.com/spring-redirect-and-forward
+####Java Quickstart 
+https://developers.google.com/gmail/api/guides/sending
 
-###OAuth 2.0 Flow: Installed apps 
+####Sending Email Guide  
+https://developers.google.com/gmail/api/quickstart/java
+
+####OAuth 2.0 Flow: Installed apps 
 https://developers.google.com/youtube/v3/guides/auth/installed-apps
+
+
+
 
 <h2>Get it up and runnning</h2>
 

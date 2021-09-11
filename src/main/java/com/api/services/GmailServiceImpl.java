@@ -30,7 +30,7 @@ import java.util.*;
 @Service
 public final class GmailServiceImpl implements GmailService {
 
-    private static final String APPLICATION_NAME = "PortalFromSpring";
+    private static final String APPLICATION_NAME = "GMAIL API SENDER";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
 
@@ -93,8 +93,6 @@ public final class GmailServiceImpl implements GmailService {
 
         System.out.println("flow  loaded");
 
-//         Exchange an authorization code for  refresh token
-
         AuthorizationCodeRequestUrl authorizationUrl;
         authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectUri);
 
@@ -127,17 +125,14 @@ public final class GmailServiceImpl implements GmailService {
 
     }
 
-
-    private Gmail createGmail() throws IOException {
+    private Gmail createGmail()  {
         return new Gmail.Builder(credential.getTransport(), JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
 
-
     @Override
     public boolean sendMessage(List<EmailParameters> emails) throws IOException {
-
         emails.stream().forEach((emailParametersToSend) -> {
 
                     Message message = null;

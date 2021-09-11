@@ -65,12 +65,6 @@
 			<version>1.31.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.google.oauth-client</groupId>
-			<artifactId>google-oauth-client-jetty</artifactId>
-			<version>1.31.0</version>
-		</dependency>
-
 <!--		 https://mvnrepository.com/artifact/com.google.apis/google-api-services-gmail-->
 		<dependency>
 			<groupId>com.google.apis</groupId>

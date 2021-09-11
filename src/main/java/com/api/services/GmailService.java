@@ -19,5 +19,5 @@ public interface GmailService {
 
     String authorize() throws Exception;
 
-    boolean addEmail(EmailParameters emailParameterstoSend);
+    boolean addEmail(EmailParameters emailParameterstoSend) throws IOException;
 }

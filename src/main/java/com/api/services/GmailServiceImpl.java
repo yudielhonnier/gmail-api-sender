@@ -117,7 +117,8 @@ public final class GmailServiceImpl implements GmailService {
     }
 
     @Override
-    public boolean addEmail(EmailParameters emailParametersToSend){
+    public boolean addEmail(EmailParameters emailParametersToSend) throws IOException {
+
         Message message = null;
        if(serverOn) {
            try {
@@ -145,7 +146,7 @@ public final class GmailServiceImpl implements GmailService {
             credential = flow.createAndStoreCredential(response, "userId");
             System.out.println("The token expire in -------"+ response.getExpiresInSeconds());
             userGmail = createGmail();
-            userGmail.users().messages().list(emailFrom);
+
             serverOn=true;
         } catch (Exception e) {
 
@@ -162,10 +163,11 @@ public final class GmailServiceImpl implements GmailService {
     }
 
     @Scheduled(cron = "0/15 * * * * ?")
-    public void sendMessage() {
+    public void sendMessage() throws IOException {
         if(serverOn&&!messageList.isEmpty()) {
             System.out.println("Server authorized status "+ serverOn);
             System.out.println("MessageList size "+ messageList.size());
+            userGmail.users().messages().list(emailFrom);
             messageList.stream().forEach((message) -> {
 
                         try {

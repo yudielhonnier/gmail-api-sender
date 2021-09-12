@@ -168,6 +168,7 @@ public final class GmailServiceImpl implements GmailService {
                 .build();
     }
 
+    // TODO ADD THIS CRON AS A PROPERTIE
     @Scheduled(cron ="0 0/15 * * * ?" )
     public void sendMessage()  {
         if(serverOn&&!messageList.isEmpty()&&!sendingMessages) {
@@ -194,7 +195,7 @@ public final class GmailServiceImpl implements GmailService {
 
         }
     }
-
+//TODO UNDERSTAND ALL THIS METHODS
 
     /**
      * Create a MimeMessage using the parameters provided.

@@ -14,16 +14,16 @@ This api is not a mail server, it only allows you to send by mail from time to t
 
 <h2>Interesting reads about this topic</h2>
 
-####Creating and managing projects in Google Cloud
+###Creating and managing projects in Google Cloud
 https://cloud.google.com/resource-manager/docs/creating-managing-projects?visit_id=637669197043753578-2757882342&rd=1
 
-####Java Quickstart 
+###Java Quickstart 
 https://developers.google.com/gmail/api/guides/sending
 
-####Sending Email Guide  
+###Sending Email Guide  
 https://developers.google.com/gmail/api/quickstart/java
 
-####Usar OAuth 2.0 para acceder a las API de Google
+###Usar OAuth 2.0 para acceder a las API de Google
 https://developers.google.com/identity/protocols/oauth2
 
 ####Gmail API Rest Resources
